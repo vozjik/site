@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedTime — Інформаційна система онлайн-запису</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            teal: '#0d9488',
+                            dark: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .active-tab {
+            color: #0284c7;
+            border-bottom: 2px solid #0284c7;
+            font-weight: 600;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans text-slate-800 bg-slate-50 antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('presentation')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-teal-500 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-sky-200">
+                        <i class="fa-solid font-bold fa-heart-pulse"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-sky-600 to-teal-600 bg-clip-text text-transparent">MedTime</span>
+                        <span class="hidden sm:inline-block text-xs bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full ml-2 font-medium">Варіант 2</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Tabs -->
+                <nav class="hidden md:flex space-x-8 h-full">
+                    <button onclick="switchTab('presentation')" id="nav-presentation" class="active-tab inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
+                        <i class="fa-solid fa-file-contract mr-2"></i>Про проект
+                    </button>
+                    <button onclick="switchTab('booking')" id="nav-booking" class="text-slate-500 hover:text-sky-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
+                        <i class="fa-solid fa-calendar-plus mr-2"></i>Онлайн-запис
+                    </button>
+                    <button onclick="switchTab('patient')" id="nav-patient" class="text-slate-500 hover:text-sky-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
+                        <i class="fa-solid fa-user-injured mr-2"></i>Кабінет пацієнта
+                    </button>
+                    <button onclick="switchTab('admin')" id="nav-admin" class="text-slate-500 hover:text-sky-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
+                        <i class="fa-solid fa-user-md mr-2"></i>Панель лікаря
+                    </button>
+                </nav>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-4 space-y-1 shadow-lg">
+            <button onclick="switchTab('presentation'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600">
+                <i class="fa-solid fa-file-contract w-6"></i>Про проект
+            </button>
+            <button onclick="switchTab('booking'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600">
+                <i class="fa-solid fa-calendar-plus w-6"></i>Онлайн-запис (Демо)
+            </button>
+            <button onclick="switchTab('patient'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600">
+                <i class="fa-solid fa-user-injured w-6"></i>Кабінет пацієнта
+            </button>
+            <button onclick="switchTab('admin'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-600">
+                <i class="fa-solid fa-user-md w-6"></i>Панель лікаря
+            </button>
+        </div>
+    </header>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-out pointer-events-none">
+        <div id="toast-body" class="bg-slate-900 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 border border-slate-700">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <span id="toast-msg" class="text-sm font-medium">Сповіщення</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= SECTION 1: PRESENTATION & DOCUMENTATION ================= -->
+        <section id="sec-presentation" class="space-y-10">
+
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-600 via-sky-500 to-teal-500 text-white p-8 md:p-12 shadow-xl">
+                <div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 pointer-events-none flex items-center justify-center">
+                    <i class="fa-solid fa-hospital text-[20rem]"></i>
+                </div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-sky-100 mb-4 inline-block">
+                        Інформаційна система • Варіант 2
+                    </span>
+                    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+                        MedTime — Розумний онлайн-запис до медичного закладу
+                    </h1>
+                    <p class="text-sky-100 text-lg md:text-xl font-light mb-8 leading-relaxed">
+                        Автоматизована платформа для швидкого бронювання візитів, оптимізації роботи реєстратури та оптимізації завантаженості лікарів.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="switchTab('booking')" class="bg-white text-sky-700 hover:bg-sky-50 font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center">
+                            <i class="fa-solid fa-calendar-check mr-2"></i>Випробувати Демо-запис
+                        </button>
+                        <button onclick="switchTab('admin')" class="bg-sky-700/60 hover:bg-sky-700 text-white font-medium px-6 py-3 rounded-xl border border-white/20 transition-all flex items-center backdrop-blur-sm">
+                            <i class="fa-solid fa-chart-line mr-2"></i>Дашборд лікаря
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Problem Statement -->
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Проблема традиційного запису</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all">
+                        <div class="text-rose-500 mb-3 text-2xl"><i class="fa-solid fa-phone-slash"></i></div>
+                        <h3 class="font-bold text-slate-800 mb-2">Черги на лініях</h3>
+                        <p class="text-sm text-slate-600">Пацієнти витрачають багато часу на телефонні дзвінки, часто стикаючись із "зайнятою" лінією в ранкові години.</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all">
+                        <div class="text-rose-500 mb-3 text-2xl"><i class="fa-solid fa-calendar-xmark"></i></div>
+                        <h3 class="font-bold text-slate-800 mb-2">Накладки та помилки</h3>
+                        <p class="text-sm text-slate-600">Ручне ведення журналів у реєстратурі призводить до подвійних записів або помилок у часі прийому.</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all">
+                        <div class="text-rose-500 mb-3 text-2xl"><i class="fa-solid fa-user-clock"></i></div>
+                        <h3 class="font-bold text-slate-800 mb-2">Пропущені візити (No-Show)</h3>
+                        <p class="text-sm text-slate-600">За відсутності автоматичних нагадувань пацієнти забувають про візит, викликаючи простій лікаря.</p>
+                    </div>
+                    <div class="p-5 rounded-xl bg-slate-50 border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all">
+                        <div class="text-rose-500 mb-3 text-2xl"><i class="fa-solid fa-clock"></i></div>
+                        <h3 class="font-bold text-slate-800 mb-2">Обмежений час</h3>
+                        <p class="text-sm text-slate-600">Неможливість записатися у позаробочий час реєстратури (ввечері або у вихідні дні).</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Target Audience -->
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Цільова аудиторія та потреби</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Patients -->
+                    <div class="p-6 rounded-xl border border-sky-100 bg-sky-50/50">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center">
+                                <i class="fa-solid fa-hospital-user text-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Пацієнти</h3>
+                        </div>
+                        <ul class="space-y-2 text-sm text-slate-600">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-sky-500 mt-1 mr-2 text-xs"></i> Цілодобовий доступ 24/7 до розкладу.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-sky-500 mt-1 mr-2 text-xs"></i> Запис за кілька кліків з будь-якого пристрою.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-sky-500 mt-1 mr-2 text-xs"></i> Автоматичні нагадування про візит.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-sky-500 mt-1 mr-2 text-xs"></i> Зручне скасування або перенесення.</li>
+                        </ul>
+                    </div>
+                    <!-- Doctors -->
+                    <div class="p-6 rounded-xl border border-teal-100 bg-teal-50/50">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center">
+                                <i class="fa-solid fa-user-md text-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Медичний персонал</h3>
+                        </div>
+                        <ul class="space-y-2 text-sm text-slate-600">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-teal-500 mt-1 mr-2 text-xs"></i> Актуальний графік прийомів у реальному часі.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-teal-500 mt-1 mr-2 text-xs"></i> Зменшення "вікон" і простоїв у роботі.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-teal-500 mt-1 mr-2 text-xs"></i> Гнучке налаштування робочих слотів і відпусток.</li>
+                        </ul>
+                    </div>
+                    <!-- Admins -->
+                    <div class="p-6 rounded-xl border border-indigo-100 bg-indigo-50/50">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center">
+                                <i class="fa-solid fa-clipboard-user text-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">Адміністратори</h3>
+                        </div>
+                        <ul class="space-y-2 text-sm text-slate-600">
+                            <li class="flex items-start"><i class="fa-solid fa-check text-indigo-500 mt-1 mr-2 text-xs"></i> Зниження навантаження на гарячу лінію.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-indigo-500 mt-1 mr-2 text-xs"></i> Автоматизований облік карт і прийомів.</li>
+                            <li class="flex items-start"><i class="fa-solid fa-check text-indigo-500 mt-1 mr-2 text-xs"></i> Аналітика відвідуваності та завантаженості.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. SMART Goal & Success Criteria -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- SMART Goal -->
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-slate-800">SMART-ціль проєкту</h2>
+                        </div>
+                        <blockquote class="p-4 italic border-l-4 border-sky-500 bg-sky-50 text-slate-700 text-sm my-4 rounded-r-lg">
+                            «Розробити та впровадити інформаційну систему онлайн-запису <strong>MedTime</strong> протягом <strong>6 місяців</strong>, досягнувши показника <strong>не менше ніж 40% усіх записів</strong> через онлайн-канал та скоротивши час оформлення візиту з <strong>7 до 1.5 хвилин</strong>.»
+                        </blockquote>
+                        <div class="grid grid-cols-5 gap-2 mt-4 text-center">
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-200"><span class="font-bold text-sky-600 block">S</span><span class="text-[10px] text-slate-500">Specific</span></div>
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-200"><span class="font-bold text-sky-600 block">M</span><span class="text-[10px] text-slate-500">Measurable</span></div>
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-200"><span class="font-bold text-sky-600 block">A</span><span class="text-[10px] text-slate-500">Achievable</span></div>
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-200"><span class="font-bold text-sky-600 block">R</span><span class="text-[10px] text-slate-500">Relevant</span></div>
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-200"><span class="font-bold text-sky-600 block">T</span><span class="text-[10px] text-slate-500">Time-bound</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics / Success Criteria -->
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-lg font-bold">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">Критерії успішності</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center"><i class="fa-solid fa-stopwatch"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-800">Час оформлення запису</div>
+                                    <div class="text-xs text-slate-500">Скорочення з 7 хв до &lt; 2 хв</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full">-70% часу</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center"><i class="fa-solid fa-globe"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-800">Частка онлайн-записів</div>
+                                    <div class="text-xs text-slate-500">Цільова частка через веб/додаток</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full">&ge; 40% записів</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-user-check"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-800">Зменшення No-Show</div>
+                                    <div class="text-xs text-slate-500">Завдяки авто-нагадуванням</div>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full">-30% пропусків</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. MVP & Roadmap -->
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">MVP та Етапи реалізації (Roadmap)</h2>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-base font-bold text-slate-700 mb-3">Ядро MVP (Мінімальний життєздатний продукт):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/50">
+                            <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">Функція 1</span>
+                            <div class="font-bold text-slate-800 text-sm">Каталог лікарів та інтерактивний розклад</div>
+                            <div class="text-xs text-slate-600 mt-1">Дозволяє вибрати спеціаліста та вільний слот часу.</div>
+                        </div>
+                        <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/50">
+                            <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">Функція 2</span>
+                            <div class="font-bold text-slate-800 text-sm">Форма онлайн-бронювання</div>
+                            <div class="text-xs text-slate-600 mt-1">Введення даних пацієнта та фіксація запису в БД.</div>
+                        </div>
+                        <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/50">
+                            <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">Функція 3</span>
+                            <div class="font-bold text-slate-800 text-sm">Кабінет пацієнта (скасування / історія)</div>
+                            <div class="text-xs text-slate-600 mt-1">Керування власними записами та оперативно звільнення слотів.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Roadmap -->
+                <div>
+                    <h3 class="text-base font-bold text-slate-700 mb-4">План розробки (6 місяців):</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 relative">
+                            <span class="absolute -top-3 left-4 bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Етап 1 • 1 міс</span>
+                            <h4 class="font-bold text-slate-800 mt-2 mb-1">Аналіз & Проектування</h4>
+                            <p class="text-xs text-slate-600">Збір вимог, проекти макетів UI/UX, схема бази даних.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 relative">
+                            <span class="absolute -top-3 left-4 bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Етап 2 • 2.5 міс</span>
+                            <h4 class="font-bold text-slate-800 mt-2 mb-1">Розробка MVP</h4>
+                            <p class="text-xs text-slate-600">Frontend + Backend, система авторизації, створення розкладу.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 relative">
+                            <span class="absolute -top-3 left-4 bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Етап 3 • 1 міс</span>
+                            <h4 class="font-bold text-slate-800 mt-2 mb-1">Тестування & QA</h4>
+                            <p class="text-xs text-slate-600">Тестування безпеки, UX-тести, оптимізація швидкодії.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 relative">
+                            <span class="absolute -top-3 left-4 bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Етап 4 • 1.5 міс</span>
+                            <h4 class="font-bold text-slate-800 mt-2 mb-1">Впровадження</h4>
+                            <p class="text-xs text-slate-600">Навчання персоналу, запуск реклами, збір перших відгуків.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= SECTION 2: BOOKING PROTOTYPE (MVP) ================= -->
+        <section id="sec-booking" class="hidden space-y-8">
+            
+            <div class="text-center max-w-2xl mx-auto mb-8">
+                <span class="text-xs font-bold text-sky-600 bg-sky-100 px-3 py-1 rounded-full uppercase tracking-wider">Інтерактивний модуль</span>
+                <h2 class="text-3xl font-extrabold text-slate-900 mt-2">Онлайн-запис на прийом</h2>
+                <p class="text-slate-600 text-sm mt-1">Заповніть покрокову форму для створення демонстраційного талону до лікаря</p>
+            </div>
+
+            <!-- Booking Stepper Progress -->
+            <div class="max-w-3xl mx-auto mb-8">
+                <div class="flex items-center justify-between relative">
+                    <div class="w-full bg-slate-200 h-1 absolute top-1/2 -translate-y-1/2 z-0"></div>
+                    <div id="progress-bar" class="bg-sky-500 h-1 absolute top-1/2 -translate-y-1/2 z-0 transition-all duration-300" style="width: 0%;"></div>
+
+                    <!-- Step 1 Indicator -->
+                    <div id="step-ind-1" class="relative z-10 w-10 h-10 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                        1
+                    </div>
+                    <!-- Step 2 Indicator -->
+                    <div id="step-ind-2" class="relative z-10 w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm shadow-md transition-colors">
+                        2
+                    </div>
+                    <!-- Step 3 Indicator -->
+                    <div id="step-ind-3" class="relative z-10 w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm shadow-md transition-colors">
+                        3
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs font-medium text-slate-600 mt-2 px-1">
+                    <span>1. Вибір лікаря</span>
+                    <span>2. Дата та час</span>
+                    <span>3. Дані талонa</span>
+                </div>
+            </div>
+
+            <!-- STEP 1: SELECT DOCTOR -->
+            <div id="booking-step-1" class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm max-w-4xl mx-auto">
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fa-solid fa-user-doctor text-sky-500 mr-2"></i>Оберіть спеціаліста
+                </h3>
+
+                <!-- Specialty Filter -->
+                <div class="flex flex-wrap gap-2 mb-6" id="specialty-filters">
+                    <button onclick="filterDoctors('all')" class="spec-btn active text-xs font-semibold px-4 py-2 rounded-xl bg-sky-600 text-white transition-all">Усі спеціальності</button>
+                    <button onclick="filterDoctors('Терапевт')" class="spec-btn text-xs font-semibold px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Терапевти</button>
+                    <button onclick="filterDoctors('Кардіолог')" class="spec-btn text-xs font-semibold px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Кардіологи</button>
+                    <button onclick="filterDoctors('Невропатолог')" class="spec-btn text-xs font-semibold px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Невропатологи</button>
+                    <button onclick="filterDoctors('Офтальмолог')" class="spec-btn text-xs font-semibold px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Офтальмологи</button>
+                </div>
+
+                <!-- Doctors List Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="doctors-grid">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+
+            <!-- STEP 2: SELECT DATE & TIME -->
+            <div id="booking-step-2" class="hidden bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center">
+                        <i class="fa-regular fa-calendar-check text-sky-500 mr-2"></i>Дата та час візиту
+                    </h3>
+                    <button onclick="goToStep(1)" class="text-xs text-sky-600 font-semibold hover:underline">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>Змінити лікаря
+                    </button>
+                </div>
+
+                <!-- Selected Doctor Card Summary -->
+                <div id="selected-doctor-summary" class="bg-sky-50/60 p-4 rounded-xl border border-sky-100 mb-6 flex items-center space-x-4">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Date Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Оберіть дату прийому:</label>
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2" id="date-slots">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Time Selection -->
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Оберіть час:</label>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5" id="time-slots">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <div class="flex justify-between pt-4 border-t border-slate-100">
+                    <button onclick="goToStep(1)" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-50">Назад</button>
+                    <button onclick="validateStep2()" class="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold shadow-md transition-all">Далі: Введення даних</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: PATIENT DATA & CONFIRMATION -->
+            <div id="booking-step-3" class="hidden bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm max-w-2xl mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-id-card text-sky-500 mr-2"></i>Данні пацієнта
+                    </h3>
+                    <button onclick="goToStep(2)" class="text-xs text-sky-600 font-semibold hover:underline">
+                        <i class="fa-solid fa-arrow-left mr-1"></i>Змінити час
+                    </button>
+                </div>
+
+                <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Прізвище, Ім'я, По батькові *</label>
+                        <input type="text" id="patient-name" required placeholder="напр. Коваленко Олена Петрівна" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Номер телефону *</label>
+                            <input type="tel" id="patient-phone" required placeholder="+380 (67) 000-00-00" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email адреса</label>
+                            <input type="email" id="patient-email" placeholder="example@mail.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Причина звернення / Скарги (опціонально)</label>
+                        <textarea id="patient-notes" rows="2" placeholder="Коротко опишіть проблеми для лікаря..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none text-sm"></textarea>
+                    </div>
+
+                    <!-- Final Summary Box -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm space-y-1.5 my-4">
+                        <div class="flex justify-between"><span class="text-slate-500">Лікар:</span><span id="sum-doc" class="font-semibold text-slate-800">-</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Дата та час:</span><span id="sum-datetime" class="font-semibold text-sky-600">-</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Кабінет:</span><span id="sum-room" class="font-semibold text-slate-800">-</span></div>
+                    </div>
+
+                    <div class="flex justify-between pt-4 border-t border-slate-100">
+                        <button type="button" onclick="goToStep(2)" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-50">Назад</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold shadow-md transition-all flex items-center">
+                            <i class="fa-solid fa-check-circle mr-2"></i>Підтвердити запис
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SUCCESS TICKET DISPLAY (Hidden initially) -->
+            <div id="booking-success" class="hidden bg-white p-8 rounded-2xl border border-slate-200 shadow-xl max-w-xl mx-auto text-center">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-4">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-900">Запис успішно створено!</h3>
+                <p class="text-xs text-slate-500 mt-1">Талон збережено у вашому особистому кабінеті</p>
+
+                <!-- Ticket Card -->
+                <div class="my-6 p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl text-left relative overflow-hidden shadow-lg">
+                    <div class="absolute right-[-20px] top-[-20px] opacity-10 text-9xl text-white">
+                        <i class="fa-solid fa-ticket"></i>
+                    </div>
+                    <div class="flex justify-between items-start border-b border-slate-700 pb-3 mb-4">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Медичний талон</span>
+                            <h4 id="ticket-id" class="text-lg font-mono font-bold">#MT-8492</h4>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs px-2.5 py-0.5 rounded-full font-medium">Підтверджено</span>
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-slate-400">Пацієнт:</span><span id="ticket-patient" class="font-medium">-</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Спеціаліст:</span><span id="ticket-doctor" class="font-medium text-sky-300">-</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Дата та час:</span><span id="ticket-datetime" class="font-bold text-amber-300">-</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Кабінет:</span><span id="ticket-room" class="font-medium">-</span></div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
+                        <span><i class="fa-solid fa-bell text-amber-400 mr-1"></i> SMS-нагадування буде надіслано</span>
+                        <span class="font-mono">MedTime App</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-3">
+                    <button onclick="switchTab('patient')" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl text-sm transition-all">
+                        <i class="fa-solid fa-user-injured mr-2"></i>Перейти в кабінет пацієнта
+                    </button>
+                    <button onclick="resetBookingForm()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-all">
+                        Зробити ще один запис
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= SECTION 3: PATIENT CABINET ================= -->
+        <section id="sec-patient" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-sky-500 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                        КП
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900" id="patient-profile-name">Коваленко Олена Петрівна</h2>
+                        <div class="flex items-center space-x-3 text-xs text-slate-500 mt-0.5">
+                            <span><i class="fa-solid fa-phone mr-1"></i>+380 (67) 123-45-67</span>
+                            <span>•</span>
+                            <span><i class="fa-solid fa-envelope mr-1"></i>elena.k@gmail.com</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="switchTab('booking')" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-4 py-2 rounded-xl text-sm transition-all shadow-sm flex items-center">
+                    <i class="fa-solid fa-plus mr-2"></i>Новий запис
+                </button>
+            </div>
+
+            <!-- Patient Appointments Section -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-slate-800 flex items-center">
+                        <i class="fa-solid fa-calendar-days text-sky-500 mr-2"></i>Мої записи на прийом
+                    </h3>
+                    <span class="text-xs bg-sky-100 text-sky-800 px-2.5 py-1 rounded-full font-semibold" id="active-count-badge">Active</span>
+                </div>
+
+                <div class="divide-y divide-slate-100" id="patient-appointments-list">
+                    <!-- Dynamic List Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: DOCTOR / ADMIN DASHBOARD ================= -->
+        <section id="sec-admin" class="hidden space-y-6">
+            
+            <!-- Dashboard Stats Bar -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Записів на сьогодні</span>
+                            <div class="text-2xl font-extrabold text-slate-900 mt-1" id="stat-today-count">8</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-600 font-medium"><i class="fa-solid fa-arrow-up mr-1"></i>+12% проти вчора</div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Частка онлайн-записів</span>
+                            <div class="text-2xl font-extrabold text-teal-600 mt-1">64%</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-500">Ціль SMART: &ge; 40%</div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Сер. час реєстрації</span>
+                            <div class="text-2xl font-extrabold text-indigo-600 mt-1">1.4 хв</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-stopwatch"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-600 font-medium"><i class="fa-solid fa-arrow-down mr-1"></i>Було 7.0 хв</div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Показник No-Show</span>
+                            <div class="text-2xl font-extrabold text-purple-600 mt-1">4.2%</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-user-slash"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-600 font-medium"><i class="fa-solid fa-arrow-down mr-1"></i>Знизилось на 32%</div>
+                </div>
+            </div>
+
+            <!-- Doctor Schedule Management Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-slate-50/50">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Розклад прийомів лікарів (Панель керування)</h3>
+                        <p class="text-xs text-slate-500">Керування статусами візитів у реальному часі</p>
+                    </div>
+
+                    <!-- Doctor Selector in Admin -->
+                    <select id="admin-doctor-filter" onchange="renderAdminTable()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="all">Усі лікарі</option>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-100/70 text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="py-3 px-4 font-bold">Час</th>
+                                <th class="py-3 px-4 font-bold">Пацієнт</th>
+                                <th class="py-3 px-4 font-bold">Лікар / Спеціальність</th>
+                                <th class="py-3 px-4 font-bold">Кабінет</th>
+                                <th class="py-3 px-4 font-bold">Статус</th>
+                                <th class="py-3 px-4 font-bold text-right">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 space-y-2">
+            <p>© 2026 MedTime — Інформаційна система онлайн-запису до медичного закладу. Розроблено для Варіанта 2.</p>
+            <p class="text-slate-400">Демонстраційний інтерактивний прототип (MVP).</p>
+        </div>
+    </footer>
+
+    <!-- RESCHEDULE MODAL -->
+    <div id="reschedule-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-800">Перенесення прийому</h3>
+            <p class="text-xs text-slate-500">Оберіть нову дату та час для вашого візиту:</p>
+            
+            <input type="hidden" id="reschedule-appt-id">
+            
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Нова дата:</label>
+                <select id="reschedule-date" class="w-full px-3 py-2 border rounded-xl text-sm"></select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Новий час:</label>
+                <select id="reschedule-time" class="w-full px-3 py-2 border rounded-xl text-sm"></select>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeRescheduleModal()" class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 hover:bg-slate-50">Скасувати</button>
+                <button onclick="saveReschedule()" class="px-4 py-2 text-xs font-semibold rounded-xl bg-sky-600 hover:bg-sky-700 text-white">Зберегти нові зміни</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DATA MODELS & INITIAL STATE
+        const DOCTORS = [
+            {
+                id: 'doc1',
+                name: 'Др. Мельник Олександр Іванович',
+                specialty: 'Терапевт',
+                experience: '12 років',
+                rating: '4.9',
+                reviews: 128,
+                room: '204',
+                avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'doc2',
+                name: 'Др. Шевченко Ольга Володимирівна',
+                specialty: 'Кардіолог',
+                experience: '15 років',
+                rating: '5.0',
+                reviews: 210,
+                room: '312',
+                avatar: 'https://images.unsplash.com/photo-1594824813566-88855ce78347?w=150&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'doc3',
+                name: 'Др. Бондаренко Сергій Петрович',
+                specialty: 'Невропатолог',
+                experience: '8 років',
+                rating: '4.8',
+                reviews: 94,
+                room: '108',
+                avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=150&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'doc4',
+                name: 'Др. Ковальчук Наталія Вікторівна',
+                specialty: 'Офтальмолог',
+                experience: '10 років',
+                rating: '4.9',
+                reviews: 156,
+                room: '401',
+                avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80'
+            }
+        ];
+
+        const AVAILABLE_DATES = [
+            { day: 'Сьогодні', date: '14 Жов', full: '2026-10-14' },
+            { day: 'Завтра', date: '15 Жов', full: '2026-10-15' },
+            { day: 'Пт', date: '16 Жов', full: '2026-10-16' },
+            { day: 'Пн', date: '19 Жов', full: '2026-10-19' },
+            { day: 'Вт', date: '20 Жов', full: '2026-10-20' }
+        ];
+
+        const TIME_SLOTS = ['09:00', '09:30', '10:00', '11:15', '12:00', '14:00', '15:30', '16:15'];
+
+        // Initial appointments state
+        let appointments = [
+            {
+                id: 'MT-1001',
+                patientName: 'Коваленко Олена Петрівна',
+                patientPhone: '+380 (67) 123-45-67',
+                doctorId: 'doc2',
+                doctorName: 'Др. Шевченко Ольга Володимирівна',
+                specialty: 'Кардіолог',
+                room: '312',
+                date: '2026-10-14',
+                dateFormatted: '14 Жовтня (Сьогодні)',
+                time: '14:00',
+                status: 'Підтверджено'
+            },
+            {
+                id: 'MT-0982',
+                patientName: 'Коваленко Олена Петрівна',
+                patientPhone: '+380 (67) 123-45-67',
+                doctorId: 'doc1',
+                doctorName: 'Др. Мельник Олександр Іванович',
+                specialty: 'Терапевт',
+                room: '204',
+                date: '2026-09-20',
+                dateFormatted: '20 Вересня 2026',
+                time: '10:00',
+                status: 'Завершено'
+            }
+        ];
+
+        // State for active booking process
+        let selectedDoctor = null;
+        let selectedDate = null;
+        let selectedTime = null;
+
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDoctors('all');
+            renderAdminDoctorFilterOptions();
+            renderPatientAppointments();
+            renderAdminTable();
+        });
+
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId) {
+            const tabs = ['presentation', 'booking', 'patient', 'admin'];
+            
+            tabs.forEach(t => {
+                const sec = document.getElementById(`sec-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                
+                if (t === tabId) {
+                    sec.classList.remove('hidden');
+                    if(nav) {
+                        nav.classList.add('active-tab');
+                        nav.classList.remove('text-slate-500');
+                    }
+                } else {
+                    sec.classList.add('hidden');
+                    if(nav) {
+                        nav.classList.remove('active-tab');
+                        nav.classList.add('text-slate-500');
+                    }
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // DOCTOR RENDER & FILTERING
+        function renderDoctors(specialty) {
+            const grid = document.getElementById('doctors-grid');
+            grid.innerHTML = '';
+
+            const filtered = specialty === 'all' 
+                ? DOCTORS 
+                : DOCTORS.filter(d => d.specialty === specialty);
+
+            filtered.forEach(doc => {
+                const isSelected = selectedDoctor && selectedDoctor.id === doc.id;
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected ? 'border-sky-500 bg-sky-50/40 ring-2 ring-sky-500/20' : 'border-slate-200 bg-white hover:border-sky-300 hover:shadow-md'
+                }`;
+                card.onclick = () => selectDoctor(doc);
+
+                card.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                        <img src="${doc.avatar}" alt="${doc.name}" class="w-16 h-16 rounded-xl object-cover shadow-sm">
+                        <div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600 bg-sky-100 px-2 py-0.5 rounded-md">${doc.specialty}</span>
+                            <h4 class="font-bold text-slate-900 mt-1 leading-snug">${doc.name}</h4>
+                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-briefcase mr-1"></i>Стаж: ${doc.experience} • Каб. ${doc.room}</p>
+                            <div class="flex items-center space-x-2 mt-2 text-xs">
+                                <span class="text-amber-500 font-bold"><i class="fa-solid fa-star mr-0.5"></i>${doc.rating}</span>
+                                <span class="text-slate-400">(${doc.reviews} відгуків)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                        <span class="text-xs font-medium text-emerald-600 flex items-center"><i class="fa-solid fa-circle text-[8px] mr-1.5"></i>Є вільні слоти</span>
+                        <button class="text-xs font-bold text-sky-600 hover:text-sky-800">Обрати <i class="fa-solid fa-chevron-right ml-1"></i></button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterDoctors(spec) {
+            document.querySelectorAll('.spec-btn').forEach(btn => {
+                if (btn.innerText.includes(spec) || (spec === 'all' && btn.innerText.includes('Усі'))) {
+                    btn.className = 'spec-btn active text-xs font-semibold px-4 py-2 rounded-xl bg-sky-600 text-white transition-all';
+                } else {
+                    btn.className = 'spec-btn text-xs font-semibold px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all';
+                }
+            });
+            renderDoctors(spec);
+        }
+
+        // STEPPER CONTROL
+        function selectDoctor(doc) {
+            selectedDoctor = doc;
+            renderDoctors('all'); // Refresh active state
+            goToStep(2);
+            renderStep2();
+        }
+
+        function goToStep(stepNum) {
+            // Step visibility
+            document.getElementById('booking-step-1').classList.toggle('hidden', stepNum !== 1);
+            document.getElementById('booking-step-2').classList.toggle('hidden', stepNum !== 2);
+            document.getElementById('booking-step-3').classList.toggle('hidden', stepNum !== 3);
+            document.getElementById('booking-success').classList.add('hidden');
+
+            // Progress Indicators
+            const bar = document.getElementById('progress-bar');
+            const ind2 = document.getElementById('step-ind-2');
+            const ind3 = document.getElementById('step-ind-3');
+
+            if (stepNum === 1) {
+                bar.style.width = '0%';
+                ind2.className = 'relative z-10 w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm shadow-md';
+                ind3.className = 'relative z-10 w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm shadow-md';
+            } else if (stepNum === 2) {
+                bar.style.width = '50%';
+                ind2.className = 'relative z-10 w-10 h-10 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-md';
+                ind3.className = 'relative z-10 w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm shadow-md';
+            } else if (stepNum === 3) {
+                bar.style.width = '100%';
+                ind3.className = 'relative z-10 w-10 h-10 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-md';
+            }
+        }
+
+        function renderStep2() {
+            // Selected Doctor Summary Card
+            const sumBox = document.getElementById('selected-doctor-summary');
+            sumBox.innerHTML = `
+                <img src="${selectedDoctor.avatar}" class="w-12 h-12 rounded-xl object-cover">
+                <div>
+                    <div class="font-bold text-slate-800 text-sm">${selectedDoctor.name}</div>
+                    <div class="text-xs text-slate-500">${selectedDoctor.specialty} • Каб. ${selectedDoctor.room}</div>
+                </div>
+            `;
+
+            // Dates Slot Render
+            const dateBox = document.getElementById('date-slots');
+            dateBox.innerHTML = '';
+            AVAILABLE_DATES.forEach((d, idx) => {
+                const btn = document.createElement('button');
+                const isSel = selectedDate && selectedDate.full === d.full;
+                btn.className = `p-3 rounded-xl border text-center transition-all ${
+                    isSel ? 'border-sky-600 bg-sky-600 text-white font-bold shadow-md' : 'border-slate-200 bg-white hover:border-sky-300 text-slate-700'
+                }`;
+                btn.type = 'button';
+                btn.onclick = () => {
+                    selectedDate = d;
+                    renderStep2();
+                };
+                btn.innerHTML = `
+                    <div class="text-[10px] uppercase tracking-wider opacity-80">${d.day}</div>
+                    <div class="text-sm font-bold">${d.date}</div>
+                `;
+                dateBox.appendChild(btn);
+
+                // Auto select first date if none selected
+                if(!selectedDate && idx === 0) selectedDate = d;
+            });
+
+            // Times Slot Render
+            const timeBox = document.getElementById('time-slots');
+            timeBox.innerHTML = '';
+            TIME_SLOTS.forEach((t, idx) => {
+                const btn = document.createElement('button');
+                const isSel = selectedTime === t;
+                btn.className = `py-2.5 px-3 rounded-xl border text-center text-xs font-semibold transition-all ${
+                    isSel ? 'border-sky-600 bg-sky-600 text-white shadow-md' : 'border-slate-200 bg-white hover:border-sky-300 text-slate-700'
+                }`;
+                btn.type = 'button';
+                btn.onclick = () => {
+                    selectedTime = t;
+                    renderStep2();
+                };
+                btn.innerText = t;
+                timeBox.appendChild(btn);
+
+                // Auto select first time if none selected
+                if(!selectedTime && idx === 0) selectedTime = t;
+            });
+        }
+
+        function validateStep2() {
+            if(!selectedDate || !selectedTime) {
+                showToast('Будь ласка, оберіть дату та час прийому!', 'error');
+                return;
+            }
+            goToStep(3);
+
+            // Populate Step 3 summary
+            document.getElementById('sum-doc').innerText = selectedDoctor.name;
+            document.getElementById('sum-datetime').innerText = `${selectedDate.date} (${selectedDate.day}) о ${selectedTime}`;
+            document.getElementById('sum-room').innerText = `Кабінет №${selectedDoctor.room}`;
+        }
+
+        // BOOKING SUBMISSION & TICKET GENERATION
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('patient-name').value;
+            const phone = document.getElementById('patient-phone').value;
+            const email = document.getElementById('patient-email').value;
+
+            const ticketId = 'MT-' + Math.floor(1000 + Math.random() * 9000);
+
+            const newAppointment = {
+                id: ticketId,
+                patientName: name,
+                patientPhone: phone,
+                patientEmail: email,
+                doctorId: selectedDoctor.id,
+                doctorName: selectedDoctor.name,
+                specialty: selectedDoctor.specialty,
+                room: selectedDoctor.room,
+                date: selectedDate.full,
+                dateFormatted: `${selectedDate.date} (${selectedDate.day})`,
+                time: selectedTime,
+                status: 'Підтверджено'
+            };
+
+            // Add to array
+            appointments.unshift(newAppointment);
+
+            // Populate Success Display
+            document.getElementById('ticket-id').innerText = '#' + ticketId;
+            document.getElementById('ticket-patient').innerText = name;
+            document.getElementById('ticket-doctor').innerText = selectedDoctor.name;
+            document.getElementById('ticket-datetime').innerText = `${selectedDate.date} о ${selectedTime}`;
+            document.getElementById('ticket-room').innerText = `Каб. ${selectedDoctor.room}`;
+
+            // Show Ticket, hide form step
+            document.getElementById('booking-step-3').classList.add('hidden');
+            document.getElementById('booking-success').classList.remove('hidden');
+
+            showToast('Запис успішно створено!', 'success');
+
+            // Refresh UI components
+            renderPatientAppointments();
+            renderAdminTable();
+        }
+
+        function resetBookingForm() {
+            selectedDoctor = null;
+            selectedDate = null;
+            selectedTime = null;
+            document.getElementById('booking-form').reset();
+            goToStep(1);
+            renderDoctors('all');
+        }
+
+        // PATIENT CABINET RENDER & ACTIONS
+        function renderPatientAppointments() {
+            const list = document.getElementById('patient-appointments-list');
+            list.innerHTML = '';
+
+            const activeAppts = appointments.filter(a => a.status !== 'Скасовано');
+            document.getElementById('active-count-badge').innerText = `${activeAppts.length} Активних`;
+
+            if(appointments.length === 0) {
+                list.innerHTML = '<div class="p-8 text-center text-slate-400 text-sm">У вас немає записаних прийомів.</div>';
+                return;
+            }
+
+            appointments.forEach(appt => {
+                const isCancelled = appt.status === 'Скасовано';
+                const isDone = appt.status === 'Завершено';
+
+                let statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold">Підтверджено</span>`;
+                if(isCancelled) statusBadge = `<span class="bg-rose-100 text-rose-800 text-xs px-2.5 py-1 rounded-full font-semibold">Скасовано</span>`;
+                if(isDone) statusBadge = `<span class="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full font-semibold">Завершено</span>`;
+
+                const item = document.createElement('div');
+                item.className = 'p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-slate-50/80 transition-all';
+                item.innerHTML = `
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 rounded-xl ${isCancelled ? 'bg-slate-100 text-slate-400' : 'bg-sky-100 text-sky-600'} flex items-center justify-center text-xl font-bold flex-shrink-0">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-mono font-bold text-slate-400">${appt.id}</span>
+                                ${statusBadge}
+                            </div>
+                            <h4 class="font-bold text-slate-900 mt-1">${appt.doctorName}</h4>
+                            <p class="text-xs text-slate-500">${appt.specialty} • Кабінет ${appt.room}</p>
+                            <div class="text-xs font-semibold text-sky-600 mt-1">
+                                <i class="fa-regular fa-clock mr-1"></i>${appt.dateFormatted} о ${appt.time}
+                            </div>
+                        </div>
+                    </div>
+
+                    ${!isCancelled && !isDone ? `
+                        <div class="flex items-center space-x-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+                            <button onclick="openRescheduleModal('${appt.id}')" class="px-3 py-1.5 text-xs font-semibold text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-lg transition-all">
+                                <i class="fa-regular fa-clock mr-1"></i>Перенести
+                            </button>
+                            <button onclick="cancelAppointment('${appt.id}')" class="px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all">
+                                <i class="fa-solid fa-xmark mr-1"></i>Скасувати
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function cancelAppointment(id) {
+            const appt = appointments.find(a => a.id === id);
+            if(appt) {
+                appt.status = 'Скасовано';
+                showToast('Запис скасовано', 'info');
+                renderPatientAppointments();
+                renderAdminTable();
+            }
+        }
+
+        // RESCHEDULE MODAL LOGIC
+        function openRescheduleModal(id) {
+            document.getElementById('reschedule-appt-id').value = id;
+            const dateSelect = document.getElementById('reschedule-date');
+            const timeSelect = document.getElementById('reschedule-time');
+
+            dateSelect.innerHTML = '';
+            AVAILABLE_DATES.forEach(d => {
+                dateSelect.innerHTML += `<option value="${d.full}">${d.date} (${d.day})</option>`;
+            });
+
+            timeSelect.innerHTML = '';
+            TIME_SLOTS.forEach(t => {
+                timeSelect.innerHTML += `<option value="${t}">${t}</option>`;
+            });
+
+            document.getElementById('reschedule-modal').classList.remove('hidden');
+        }
+
+        function closeRescheduleModal() {
+            document.getElementById('reschedule-modal').classList.add('hidden');
+        }
+
+        function saveReschedule() {
+            const id = document.getElementById('reschedule-appt-id').value;
+            const newDateVal = document.getElementById('reschedule-date').value;
+            const newTimeVal = document.getElementById('reschedule-time').value;
+
+            const appt = appointments.find(a => a.id === id);
+            const dateObj = AVAILABLE_DATES.find(d => d.full === newDateVal);
+
+            if(appt && dateObj) {
+                appt.date = newDateVal;
+                appt.dateFormatted = `${dateObj.date} (${dateObj.day})`;
+                appt.time = newTimeVal;
+                
+                showToast('Час прийому змінено!', 'success');
+                closeRescheduleModal();
+                renderPatientAppointments();
+                renderAdminTable();
+            }
+        }
+
+        // ADMIN / DOCTOR DASHBOARD RENDER & ACTIONS
+        function renderAdminDoctorFilterOptions() {
+            const select = document.getElementById('admin-doctor-filter');
+            DOCTORS.forEach(doc => {
+                select.innerHTML += `<option value="${doc.id}">${doc.name}</option>`;
+            });
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            const filterDocId = document.getElementById('admin-doctor-filter').value;
+            tbody.innerHTML = '';
+
+            let filtered = appointments;
+            if(filterDocId !== 'all') {
+                filtered = appointments.filter(a => a.doctorId === filterDocId);
+            }
+
+            document.getElementById('stat-today-count').innerText = filtered.filter(a => a.status === 'Підтверджено').length;
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 text-xs">Записів не знайдено</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(appt => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition-all';
+
+                let statusColor = 'bg-emerald-100 text-emerald-800';
+                if(appt.status === 'Скасовано') statusColor = 'bg-rose-100 text-rose-800';
+                if(appt.status === 'Завершено') statusColor = 'bg-slate-100 text-slate-600';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${appt.time} <span class="text-[10px] text-slate-400 block font-normal">${appt.date}</span></td>
+                    <td class="py-3 px-4">
+                        <div class="font-bold text-slate-800">${appt.patientName}</div>
+                        <div class="text-xs text-slate-500">${appt.patientPhone}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="text-xs font-semibold text-slate-800">${appt.doctorName}</div>
+                        <div class="text-[11px] text-sky-600">${appt.specialty}</div>
+                    </td>
+                    <td class="py-3 px-4 text-xs font-mono font-medium text-slate-600">№${appt.room}</td>
+                    <td class="py-3 px-4">
+                        <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full ${statusColor}">${appt.status}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        ${appt.status === 'Підтверджено' ? `
+                            <button onclick="changeStatus('${appt.id}', 'Завершено')" class="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 px-2.5 py-1 rounded-lg font-semibold mr-1">
+                                <i class="fa-solid fa-check mr-1"></i>Прийнято
+                            </button>
+                            <button onclick="changeStatus('${appt.id}', 'Скасовано')" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg font-semibold">
+                                Скасувати
+                            </button>
+                        ` : '<span class="text-xs text-slate-400">-</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function changeStatus(id, newStatus) {
+            const appt = appointments.find(a => a.id === id);
+            if(appt) {
+                appt.status = newStatus;
+                showToast(`Статус візиту змінено на "${newStatus}"`, 'info');
+                renderAdminTable();
+                renderPatientAppointments();
+            }
+        }
+
+        // TOAST NOTIFICATION SYSTEM
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+
+            if (type === 'success') {
+                toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+            } else if (type === 'error') {
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-400 text-lg';
+            } else {
+                toastIcon.className = 'fa-solid fa-circle-info text-sky-400 text-lg';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
